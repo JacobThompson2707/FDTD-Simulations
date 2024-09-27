@@ -7,10 +7,12 @@ import os
 
 SIZEX = 100
 SIZEY = 80
+# For The TFSF 
 FX = 5
 FY = 5
 LX = 95
 LY = 75
+#
 maxTime = 1000
 cdtds = 1 / math.sqrt(2)
 imp0 = 377
@@ -82,17 +84,11 @@ chyh = ((mu - 0.5 * (TS) * sigma_stary) / (mu + 0.5 * (TS) * sigma_stary))
 chye = (TS/SS) / (mu + 0.5 * TS * sigma_stary)
 chxh = ((mu - 0.5 * TS * sigma_starx) / (mu + 0.5 * TS * sigma_starx))
 chxe = (TS/SS) / (mu + 0.5 * TS * sigma_starx)
-#TS/SS = 2.35x10^-9, chye1=1.48*10^-11
+
 ceye = ((epsilon - 0.5 * TS * sigmay) / (epsilon + 0.5 * TS * sigmay))
 ceyh = (TS/SS) / (epsilon + 0.5 * TS * sigmay)
 cexe = ((epsilon - 0.5 * TS * sigmax) / (epsilon + 0.5 * TS * sigmax))
 cexh = (TS/SS) / (epsilon + 0.5 * TS * sigmax)
-
-#chyh1d = ((mu[:,0] - 0.5 * (TS) * sigma_stary[0,:]) / (mu[:,0] + 0.5 * (TS) * sigma_stary[:,0]))
-#chye1d = (TS/SS) / (mu[:,0] + 0.5 * TS * sigma_stary[:,0])
-#ceze1d = ((epsilon[0,:] - 0.5 * TS * sigmax[0,:]) / (epsilon[0,:] + 0.5 * TS * sigmax[0,:]))
-#cezh1d = (TS/SS) / (epsilon[0,:] + 0.5 * TS * sigmax[0,:])
-
 
 def ezINC(qTime,location):
     arg = 1 * math.pi * ((cdtds * qTime - location) / ppw - 1.0  ) 
@@ -195,10 +191,9 @@ class Plots():
 
 class PECs():
     
-    def __init__(self,radius,x,y,x2=None): #note x2 is only needed for Double Slit function
+    def __init__(self,radius,x,y):
         self.radius = radius
         self.x = x
-        self.x2 =x2
         self.y = y
 
     def PEC_Circle(self):
@@ -217,23 +212,6 @@ class PECs():
                     chxh[nn,mm] = 0
                     chye[nn, mm] = 0
                     chyh[nn, mm] = 0
-    
-    def Dia_Circle(self):
-
-        radius2 = self.radius * self.radius
-        for mm in range(1, SIZEX - 1):
-            xLocation = mm - self.x
-            for nn in range(1, SIZEY - 1):
-                yLocation = nn - self.y
-                if xLocation * xLocation + yLocation * yLocation < radius2:
-                    cexe[nn,mm] = 1 
-                    cexh[nn,mm] = cdtds * imp0 / math.sqrt(100)
-                    ceye[nn,mm] = 1 
-                    ceyh[nn,mm] = cdtds * imp0 / math.sqrt(100)
-                    chxe[nn,mm] = cdtds / (imp0)
-                    chxh[nn,mm] = 1
-                    chye[nn, mm] = cdtds / (imp0 )
-                    chyh[nn, mm] = 1
 
     def PEC_Rec(self,width,height):
 
@@ -251,25 +229,9 @@ class PECs():
                     ceye[nn,mm] = 0
                     ceyh[nn,mm] = 0
 
-    def Dia_Rec(self,width,height):
-
-        for mm in range(1,SIZEX - 1):
-            xlocation = mm - self.x
-            for nn in range(1, SIZEY - 1):
-                ylocation = nn - self.y
-                if abs((xlocation/width) + (ylocation/height)) + abs((xlocation/width) - (ylocation/height)) < self.radius:
-                    chxe[nn,mm] = cdtds / imp0
-                    chxh[nn,mm] = 1
-                    chye[nn, mm] = cdtds / imp0
-                    chyh[nn, mm] = 1
-                    cexe[nn, mm] = 1
-                    cexh[nn, mm] = cdtds * imp0 / math.sqrt(10)
-                    ceye[nn,mm] = 1
-                    ceyh[nn,mm] = cdtds * imp0 / math.sqrt(10)
-
     def PEC_Line(self, x_start, y_start, x_end, y_end):
-        # Check if the line is vertical or horizontal
-        if x_start == x_end:  # Vertical line
+    
+        if x_start == x_end:  
             for y in range(min(y_start, y_end), max(y_start, y_end) + 1):
                 chxe[y, x_start] = cdtds / imp0 *0
                 chxh[y, x_start] = 1 *0
@@ -281,7 +243,7 @@ class PECs():
                 ceye[y, x_start] = 1 *0
                 ceyh[y, x_start] = cdtds * imp0 / math.sqrt(10) *0
 
-        elif y_start == y_end:  # Horizontal line
+        elif y_start == y_end: 
             for x in range(min(x_start, x_end), max(x_start, x_end) + 1):
                 chxe[y_start, x] = cdtds / imp0
                 chxh[y_start, x] = 1
@@ -318,7 +280,7 @@ class PECs():
                     ceye[nn,mm] = 1.0
                     ceyh[nn,mm] = cdtds * imp0
 
-        
+    
         for mm in range(SIZEX):
             for nn in range(SIZEY - 1):
                 chxh[nn, mm] = 1.0
@@ -331,19 +293,17 @@ class PECs():
 
     def PEC45(self, x_start, y_start, x_end, y_end):
 
-        # Check if the points form a 45-degree line
         if abs(x_end - x_start) != abs(y_end - y_start):
             raise ValueError("The provided points do not form a 45-degree line.")
         
-        # Iterate over the range from start to end
         x = x_start
         y = y_start
 
-        x_direction = 1 if x_end > x_start else -1  # Determine the direction (positive or negative)
-        y_direction = 1 if y_end > y_start else -1  # for both x and y
+        x_direction = 1 if x_end > x_start else -1  
+        y_direction = 1 if y_end > y_start else -1  
 
         while x != x_end and y != y_end:
-            # Set the field components to zero to represent PEC at the current (y, x) location
+           
             chxe[y, x] = 0
             chxh[y, x] = 0
             chxe[y, x + 1] = 0
@@ -357,9 +317,49 @@ class PECs():
             ceye[y, x] = 0
             ceyh[y, x] = 0
             
-            # Move diagonally in both x and y directions (for 45-degree line)
             x += x_direction
             y += y_direction
+
+class Dia():
+
+    def __init__(self,radius,x,y,EPSR):
+        self.radius = radius
+        self.x = x
+        self.y = y
+        self.EPSR = EPSR
+
+    def Dia_Rec(self,width,height):
+
+        for mm in range(1,SIZEX - 1):
+            xlocation = mm - self.x
+            for nn in range(1, SIZEY - 1):
+                ylocation = nn - self.y
+                if abs((xlocation/width) + (ylocation/height)) + abs((xlocation/width) - (ylocation/height)) < self.radius:
+                    chxe[nn,mm] = cdtds / imp0
+                    chxh[nn,mm] = 1
+                    chye[nn, mm] = cdtds / imp0
+                    chyh[nn, mm] = 1
+                    cexe[nn, mm] = 1
+                    cexh[nn, mm] = cdtds * imp0 / math.sqrt(self.EPSR)
+                    ceye[nn,mm] = 1
+                    ceyh[nn,mm] = cdtds * imp0 / math.sqrt(self.EPSR)
+    
+    def Dia_Circle(self):
+
+        radius2 = self.radius * self.radius
+        for mm in range(1, SIZEX - 1):
+            xLocation = mm - self.x
+            for nn in range(1, SIZEY - 1):
+                yLocation = nn - self.y
+                if xLocation * xLocation + yLocation * yLocation < radius2:
+                    cexe[nn,mm] = 1 
+                    cexh[nn,mm] = cdtds * imp0 / math.sqrt(self.EPSR)
+                    ceye[nn,mm] = 1 
+                    ceyh[nn,mm] = cdtds * imp0 / math.sqrt(self.EPSR)
+                    chxe[nn,mm] = cdtds / imp0
+                    chxh[nn,mm] = 1
+                    chye[nn, mm] = cdtds / imp0
+                    chyh[nn, mm] = 1
 
 class FieldUpdates():
 
@@ -424,6 +424,7 @@ class TFSF():
                    
 for qTime in range(maxTime):
 
+    """#TFSF PECS
     PEC1 = PECs(1,20,20)
     PEC1.PEC_Line(20,20,20,60)
     PEC1.PEC_Line(30,20,30,60)
@@ -432,21 +433,21 @@ for qTime in range(maxTime):
     PEC1.PEC_Line(60,20,60,60)
     PEC1.PEC_Line(70,20,70,60)
     PEC1.PEC_Line(80,20,80,60)
-    
+    """
 
     """#Harmonic Resonator?
-    PEC2 = PECs(1,50,15)
-    PEC2.Dia_Rec(200,10)
-    PEC3 = PECs(25,40,45)
-    PEC3.Dia_Circle()
-    PEC4 = PECs(13,40,45)
-    PEC4.PEC_Circle()
-    PEC3 = PECs(25,140,45)
-    PEC3.Dia_Circle()
-    PEC4 = PECs(13,140,45)
-    PEC4.PEC_Circle()
-    PEC5 = PECs(1,50,85)
-    PEC5.Dia_Rec(200,10)
+    Dia1 = Dia(1,50,15,10)
+    Dia1.Dia_Rec(200,10)
+    Dia2 = Dia(25,40,45,10)
+    Dia2.Dia_Circle()
+    PEC1 = PECs(13,40,45)
+    PEC1.PEC_Circle()
+    Dia3 = Dia2(25,140,45,10)
+    Dia3.Dia_Circle()
+    PEC2 = PECs(13,140,45)
+    PEC2.PEC_Circle()
+    Dia4 = Dia4(1,50,85,10)
+    Dia4.Dia_Rec(200,10)
     """
 
     """ #Waveguide Example, SIZEX = 101, SIZEY = 200, No TFSF, Two Sources 3 units apart one += another -=
